@@ -162,7 +162,9 @@ async function preloadMoneyImages() {
   overlay.hidden = false;
 
   try {
-    const imageLoaders = MONEY_DENOMINATIONS.map(
+    const imageLoaders = MONEY_DENOMINATIONS.filter(
+      ({ image }) => image !== null,
+    ).map(
       ({ image }) =>
         new Promise((resolve) => {
           const img = new Image();
