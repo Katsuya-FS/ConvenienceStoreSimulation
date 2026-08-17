@@ -647,6 +647,42 @@ button {
 .money-card[draggable="true"] {
   cursor: grab;
 }
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 250, 240, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+.loading-overlay[hidden] {
+  display: none;
+}
+.loading-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 20px 28px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  text-align: center;
+  color: var(--wood-dark);
+  font-weight: 800;
+}
+.loading-spinner {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 12px;
+  border: 6px solid #f1e4bb;
+  border-top-color: var(--sky-blue);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .money-card.dragging {
   opacity: 0.4;
 }
