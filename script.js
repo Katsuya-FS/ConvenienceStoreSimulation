@@ -338,8 +338,9 @@ function renderWalletGrid() {
     const count = supply[value];
     const btn = document.createElement("button");
     btn.className = `money-card ${type}`;
-    btn.disabled = count <= 0;
-    btn.draggable = count > 0;
+    const cannotAdd = !canAddPaymentMoney(value, type);
+    btn.disabled = count <= 0 || cannotAdd;
+    btn.draggable = count > 0 && !cannotAdd;
 
     const billPalettes = {
       1000: ["#2d7ec6", "#184d8d"],
@@ -406,6 +407,12 @@ function addPaymentMoney(value, type) {
   const supply =
     type === "bill" ? state.walletSupply.bills : state.walletSupply.coins;
   if (supply[value] <= 0) return;
+  if (!canAddPaymentMoney(value, type)) {
+    const messageEl = document.getElementById("payment-message");
+    messageEl.textContent = `❌ You cannot pay more than ${formatPeso(state.totalMoney)} in total.`;
+    messageEl.className = "cart-message error";
+    return;
+  }
 
   supply[value] -= 1;
   state.paymentSelected.push({ value, type });
@@ -425,6 +432,16 @@ function removePaymentMoney(index) {
 
 function paymentTotal() {
   return state.paymentSelected.reduce((sum, item) => sum + item.value, 0);
+}
+
+function canAddPaymentMoney(value, type) {
+  const supply =
+    type === "bill" ? state.walletSupply.bills : state.walletSupply.coins;
+  const available = supply[value] ?? 0;
+  if (available <= 0) return false;
+
+  const nextTotal = paymentTotal() + value;
+  return nextTotal <= state.totalMoney;
 }
 
 function renderPaymentSelected() {
