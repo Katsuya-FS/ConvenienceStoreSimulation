@@ -29,8 +29,11 @@ const PRODUCTS = [
 // the wallet's ₱20 as a coin and give a separate ₱20 bill too,
 // so kids see both forms.)
 const BILLS = [1000, 500, 200, 100, 50];
-const COINS = [20, 10, 5, 1];
-const ALL_DENOMS_DESC = [1000, 500, 200, 100, 50, 20, 10, 5, 1];
+const CENTAVO_COINS = [0.5, 0.25, 0.1, 0.05];
+const COINS = [20, 10, 5, 1, 0.5, 0.25, 0.1, 0.05];
+const ALL_DENOMS_DESC = [
+  1000, 500, 200, 100, 50, 20, 10, 5, 1, 0.5, 0.25, 0.1, 0.05,
+];
 const MONEY_DENOMINATIONS = [
   { type: "bill", value: 1000, image: "assets/1000PesoBill.png" },
   { type: "bill", value: 500, image: "assets/500PesoBill.jpg" },
@@ -41,6 +44,10 @@ const MONEY_DENOMINATIONS = [
   { type: "coin", value: 10, image: "assets/10PesoBill.png" },
   { type: "coin", value: 5, image: "assets/5PesoBill.png" },
   { type: "coin", value: 1, image: "assets/1PesoBill.png" },
+  { type: "coin", value: 0.5, image: "assets/50CentavosBill.png" },
+  { type: "coin", value: 0.25, image: "assets/25CentavosBill.png" },
+  { type: "coin", value: 0.1, image: "assets/10CentavosBill.png" },
+  { type: "coin", value: 0.05, image: "assets/5CentavosBill.png" },
 ];
 
 // Starting supply of each denomination in the player's wallet.
@@ -48,7 +55,7 @@ const MONEY_DENOMINATIONS = [
 function freshWalletSupply() {
   return {
     bills: { 1000: 2, 500: 3, 200: 4, 100: 6, 50: 6 },
-    coins: { 20: 6, 10: 6, 5: 6, 1: 10 },
+    coins: { 20: 6, 10: 6, 5: 6, 1: 10, 0.5: 6, 0.25: 6, 0.1: 6, 0.05: 6 },
   };
 }
 
@@ -73,7 +80,12 @@ const state = {
    --------------------------------------------------------- */
 
 function formatPeso(amount) {
-  return `₱${amount.toLocaleString("en-PH")}`;
+  const numericAmount = Number(amount);
+  if (!Number.isFinite(numericAmount)) return "₱0";
+  return `₱${numericAmount.toLocaleString("en-PH", {
+    minimumFractionDigits: numericAmount % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 function isCoinValue(value) {
@@ -86,6 +98,10 @@ function isCoinValue(value) {
     value !== 500 &&
     value !== 1000
   );
+}
+
+function isCentavoValue(value) {
+  return CENTAVO_COINS.includes(value);
 }
 
 function showScreen(id) {
@@ -407,7 +423,14 @@ function renderWalletGrid() {
   }
 
   BILLS.forEach((value) => grid.appendChild(makeMoneyCard(value, "bill")));
-  COINS.forEach((value) => grid.appendChild(makeMoneyCard(value, "coin")));
+  COINS.forEach((value) => {
+    if (!CENTAVO_COINS.includes(value)) {
+      grid.appendChild(makeMoneyCard(value, "coin"));
+    }
+  });
+  CENTAVO_COINS.forEach((value) =>
+    grid.appendChild(makeMoneyCard(value, "coin")),
+  );
 }
 
 // Let the "Your Payment" box accept dropped money from the wallet.

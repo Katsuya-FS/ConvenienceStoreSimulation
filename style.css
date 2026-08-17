@@ -793,6 +793,15 @@ button {
   color: var(--awning-red);
 }
 
+.change-header {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--wood-dark);
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
 .change-breakdown {
   display: flex;
   flex-wrap: wrap;
