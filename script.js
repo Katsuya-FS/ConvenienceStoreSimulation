@@ -189,13 +189,18 @@ function removeFromCart(productId) {
 
 function renderCart() {
   const list = document.getElementById("cart-list");
-  const emptyMsg = document.getElementById("cart-empty-msg");
   const checkoutBtn = document.getElementById("btn-checkout");
 
   list.innerHTML = "";
 
   if (state.cart.length === 0) {
-    list.appendChild(emptyMsg);
+    // Build the empty-state message fresh each time rather than reusing
+    // an old element reference (a stale reference here previously caused
+    // a crash the next time the cart became empty again).
+    const empty = document.createElement("li");
+    empty.className = "cart-empty";
+    empty.textContent = "Your cart is empty. Add something yummy!";
+    list.appendChild(empty);
     checkoutBtn.disabled = true;
   } else {
     state.cart.forEach((item) => {
@@ -253,26 +258,55 @@ function renderWalletGrid() {
   const grid = document.getElementById("wallet-grid");
   grid.innerHTML = "";
 
-  BILLS.forEach((value) => {
-    const count = state.walletSupply.bills[value];
+  function makeMoneyCard(value, type) {
+    const supply = type === "bill" ? state.walletSupply.bills : state.walletSupply.coins;
+    const count = supply[value];
     const btn = document.createElement("button");
-    btn.className = "money-card bill";
+    btn.className = `money-card ${type}`;
     btn.disabled = count <= 0;
-    btn.innerHTML = `<span class="money-emoji">💵</span> ${formatPeso(value)}<br><small>×${count}</small>`;
-    btn.addEventListener("click", () => addPaymentMoney(value, "bill"));
-    grid.appendChild(btn);
-  });
+    btn.draggable = count > 0;
+    btn.innerHTML = `<span class="money-emoji">${type === "bill" ? "💵" : "🪙"}</span> ${formatPeso(value)}<br><small>×${count}</small>`;
 
-  COINS.forEach((value) => {
-    const count = state.walletSupply.coins[value];
-    const btn = document.createElement("button");
-    btn.className = "money-card coin";
-    btn.disabled = count <= 0;
-    btn.innerHTML = `<span class="money-emoji">🪙</span> ${formatPeso(value)}<br><small>×${count}</small>`;
-    btn.addEventListener("click", () => addPaymentMoney(value, "coin"));
-    grid.appendChild(btn);
-  });
+    // Tap/click still works (important for touch devices).
+    btn.addEventListener("click", () => addPaymentMoney(value, type));
+
+    // Drag support for desktop / trackpad use.
+    btn.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/plain", JSON.stringify({ value, type }));
+      e.dataTransfer.effectAllowed = "copy";
+      btn.classList.add("dragging");
+    });
+    btn.addEventListener("dragend", () => btn.classList.remove("dragging"));
+
+    return btn;
+  }
+
+  BILLS.forEach((value) => grid.appendChild(makeMoneyCard(value, "bill")));
+  COINS.forEach((value) => grid.appendChild(makeMoneyCard(value, "coin")));
 }
+
+// Let the "Your Payment" box accept dropped money from the wallet.
+const paymentDropzone = document.getElementById("payment-selected");
+paymentDropzone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "copy";
+  paymentDropzone.classList.add("drag-hover");
+});
+paymentDropzone.addEventListener("dragleave", () => {
+  paymentDropzone.classList.remove("drag-hover");
+});
+paymentDropzone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  paymentDropzone.classList.remove("drag-hover");
+  const raw = e.dataTransfer.getData("text/plain");
+  if (!raw) return;
+  try {
+    const { value, type } = JSON.parse(raw);
+    addPaymentMoney(value, type);
+  } catch (err) {
+    // Ignore malformed drag data.
+  }
+});
 
 function addPaymentMoney(value, type) {
   const supply = type === "bill" ? state.walletSupply.bills : state.walletSupply.coins;
@@ -299,11 +333,15 @@ function paymentTotal() {
 
 function renderPaymentSelected() {
   const container = document.getElementById("payment-selected");
-  const emptyMsg = document.getElementById("payment-empty-msg");
   container.innerHTML = "";
 
   if (state.paymentSelected.length === 0) {
-    container.appendChild(emptyMsg);
+    // Built fresh each time — see the note in renderCart() about why we
+    // don't reuse a single cached "empty" element.
+    const empty = document.createElement("p");
+    empty.className = "payment-empty";
+    empty.textContent = "Drag or tap bills and coins from your wallet.";
+    container.appendChild(empty);
   } else {
     state.paymentSelected.forEach((item, index) => {
       const chip = document.createElement("button");
@@ -475,15 +513,13 @@ function startQuiz() {
 }
 
 function generateQuiz(length) {
+  // Cycle through all three question types so every skill gets practiced:
+  // identifying a single bill/coin, counting a combination, and building
+  // an exact amount by dragging money.
+  const makers = [makeIdentifyQuestion, makeComboQuestion, makeDragQuestion];
   const questions = [];
   for (let i = 0; i < length; i++) {
-    // Alternate between "identify a single note/coin" and
-    // "count a small combination" so both skills get practiced.
-    if (i % 2 === 0) {
-      questions.push(makeIdentifyQuestion());
-    } else {
-      questions.push(makeComboQuestion());
-    }
+    questions.push(makers[i % makers.length]());
   }
   return questions;
 }
@@ -529,6 +565,38 @@ function makeComboQuestion() {
   };
 }
 
+function makeDragQuestion() {
+  // Pick 2-3 pieces that add up to the target amount.
+  const pieceCount = randomInt(2, 3);
+  const correctPieces = [];
+  for (let i = 0; i < pieceCount; i++) {
+    const value = ALL_DENOMS_DESC[randomInt(3, ALL_DENOMS_DESC.length - 1)]; // 100 and below
+    correctPieces.push(value);
+  }
+  const target = correctPieces.reduce((sum, v) => sum + v, 0);
+
+  // Add a couple of distractor pieces so dragging is a real choice,
+  // not just "drag everything you see".
+  const distractorPieces = [];
+  while (distractorPieces.length < 2) {
+    const value = ALL_DENOMS_DESC[randomInt(2, ALL_DENOMS_DESC.length - 1)];
+    distractorPieces.push(value);
+  }
+
+  const pool = shuffle([...correctPieces, ...distractorPieces]).map((value, index) => ({
+    uid: `d${index}-${value}-${Math.random().toString(36).slice(2, 7)}`,
+    value,
+    isCoin: value <= 20,
+  }));
+
+  return {
+    type: "drag",
+    prompt: "Drag the exact amount into the box below.",
+    target,
+    pool,
+  };
+}
+
 function renderQuizQuestion() {
   const question = state.quiz[state.quizIndex];
   document.getElementById("quiz-progress").textContent = `${state.quizIndex + 1} / ${state.quiz.length}`;
@@ -537,24 +605,175 @@ function renderQuizQuestion() {
   document.getElementById("quiz-feedback").className = "quiz-feedback";
 
   const visual = document.getElementById("quiz-visual");
-  visual.innerHTML = "";
-  question.visual.forEach((piece) => {
-    const chip = document.createElement("div");
-    chip.className = piece.isCoin ? "mini-money coin" : "mini-money bill";
-    chip.textContent = `${piece.isCoin ? "🪙" : "💵"} ${formatPeso(piece.value)}`;
-    visual.appendChild(chip);
+  const optionsEl = document.getElementById("quiz-options");
+  const dragQuizEl = document.getElementById("drag-quiz");
+
+  if (question.type === "drag") {
+    visual.style.display = "none";
+    optionsEl.style.display = "none";
+    dragQuizEl.style.display = "block";
+    visual.innerHTML = "";
+    optionsEl.innerHTML = "";
+    renderDragQuestion(question);
+  } else {
+    visual.style.display = "flex";
+    optionsEl.style.display = "grid";
+    dragQuizEl.style.display = "none";
+
+    visual.innerHTML = "";
+    question.visual.forEach((piece) => {
+      const chip = document.createElement("div");
+      chip.className = piece.isCoin ? "mini-money coin" : "mini-money bill";
+      chip.textContent = `${piece.isCoin ? "🪙" : "💵"} ${formatPeso(piece.value)}`;
+      visual.appendChild(chip);
+    });
+
+    optionsEl.innerHTML = "";
+    question.options.forEach((optionValue) => {
+      const btn = document.createElement("button");
+      btn.className = "quiz-option";
+      btn.textContent = formatPeso(optionValue);
+      btn.addEventListener("click", () => checkAnswer(btn, optionValue, question.correct));
+      optionsEl.appendChild(btn);
+    });
+  }
+}
+
+/* --- Drag-the-exact-amount question: setup and interaction --- */
+
+// Tracks which pool pieces (by uid) are currently sitting in the dropzone.
+let dragAnswerUids = [];
+
+function renderDragQuestion(question) {
+  dragAnswerUids = [];
+  document.getElementById("drag-target-amount").textContent = formatPeso(question.target);
+
+  const pool = document.getElementById("drag-pool");
+  const dropzone = document.getElementById("drag-dropzone");
+  const checkBtn = document.getElementById("btn-check-drag");
+  checkBtn.disabled = false;
+
+  pool.innerHTML = "";
+  question.pool.forEach((piece) => {
+    pool.appendChild(makeDragTile(piece));
   });
 
-  const optionsEl = document.getElementById("quiz-options");
-  optionsEl.innerHTML = "";
-  question.options.forEach((optionValue) => {
-    const btn = document.createElement("button");
-    btn.className = "quiz-option";
-    btn.textContent = formatPeso(optionValue);
-    btn.addEventListener("click", () => checkAnswer(btn, optionValue, question.correct));
-    optionsEl.appendChild(btn);
-  });
+  updateDragTotal(question);
+
+  // Allow dropping tiles onto the dropzone.
+  dropzone.ondragover = (e) => {
+    e.preventDefault();
+    dropzone.classList.add("drag-hover");
+  };
+  dropzone.ondragleave = () => dropzone.classList.remove("drag-hover");
+  dropzone.ondrop = (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("drag-hover");
+    const uid = e.dataTransfer.getData("text/plain");
+    moveDragTileToAnswer(question, uid);
+  };
 }
+
+function makeDragTile(piece) {
+  const tile = document.createElement("button");
+  tile.className = piece.isCoin ? "money-card coin" : "money-card bill";
+  tile.draggable = true;
+  tile.dataset.uid = piece.uid;
+  tile.innerHTML = `<span class="money-emoji">${piece.isCoin ? "🪙" : "💵"}</span> ${formatPeso(piece.value)}`;
+
+  tile.addEventListener("dragstart", (e) => {
+    e.dataTransfer.setData("text/plain", piece.uid);
+    e.dataTransfer.effectAllowed = "move";
+    tile.classList.add("dragging");
+  });
+  tile.addEventListener("dragend", () => tile.classList.remove("dragging"));
+
+  // Tap fallback: tapping a tile toggles it between pool and dropzone.
+  tile.addEventListener("click", () => {
+    const question = state.quiz[state.quizIndex];
+    if (dragAnswerUids.includes(piece.uid)) {
+      dragAnswerUids = dragAnswerUids.filter((u) => u !== piece.uid);
+    } else {
+      dragAnswerUids.push(piece.uid);
+    }
+    refreshDragZones(question);
+  });
+
+  return tile;
+}
+
+function moveDragTileToAnswer(question, uid) {
+  if (!uid || dragAnswerUids.includes(uid)) return;
+  if (!question.pool.some((p) => p.uid === uid)) return;
+  dragAnswerUids.push(uid);
+  refreshDragZones(question);
+}
+
+function refreshDragZones(question) {
+  const pool = document.getElementById("drag-pool");
+  const dropzone = document.getElementById("drag-dropzone");
+
+  pool.innerHTML = "";
+  dropzone.innerHTML = "";
+
+  question.pool.forEach((piece) => {
+    const tile = makeDragTile(piece);
+    if (dragAnswerUids.includes(piece.uid)) {
+      dropzone.appendChild(tile);
+    } else {
+      pool.appendChild(tile);
+    }
+  });
+
+  if (dragAnswerUids.length === 0) {
+    const hint = document.createElement("span");
+    hint.className = "drag-dropzone-hint";
+    hint.textContent = "Drop or tap money here";
+    dropzone.appendChild(hint);
+  }
+
+  updateDragTotal(question);
+}
+
+function updateDragTotal(question) {
+  const total = question.pool
+    .filter((p) => dragAnswerUids.includes(p.uid))
+    .reduce((sum, p) => sum + p.value, 0);
+  document.getElementById("drag-current-total").textContent = formatPeso(total);
+}
+
+document.getElementById("btn-check-drag").addEventListener("click", () => {
+  const question = state.quiz[state.quizIndex];
+  const total = question.pool
+    .filter((p) => dragAnswerUids.includes(p.uid))
+    .reduce((sum, p) => sum + p.value, 0);
+
+  const feedback = document.getElementById("quiz-feedback");
+  document.getElementById("btn-check-drag").disabled = true;
+  document.querySelectorAll("#drag-pool .money-card, #drag-dropzone .money-card").forEach((t) => (t.disabled = true));
+
+  if (total === question.target) {
+    feedback.textContent = `🎉 Correct! That's ${formatPeso(total)}!`;
+    feedback.className = "quiz-feedback correct";
+    state.stars += 1;
+  } else if (total < question.target) {
+    feedback.textContent = `😊 Not quite — you need ${formatPeso(question.target - total)} more.`;
+    feedback.className = "quiz-feedback wrong";
+  } else {
+    feedback.textContent = `😊 A little too much! The answer was ${formatPeso(question.target)}.`;
+    feedback.className = "quiz-feedback wrong";
+  }
+
+  window.setTimeout(() => {
+    state.quizIndex += 1;
+    if (state.quizIndex < state.quiz.length) {
+      renderQuizQuestion();
+    } else {
+      renderFinalScreen();
+      showScreen("screen-final");
+    }
+  }, 1400);
+});
 
 function checkAnswer(button, chosenValue, correctValue) {
   const feedback = document.getElementById("quiz-feedback");

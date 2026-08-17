@@ -90,14 +90,14 @@
 
   <div class="payment-layout">
     <div class="wallet-panel">
-      <h2 class="panel-heading">👛 Your Wallet — tap money to pay!</h2>
+      <h2 class="panel-heading">👛 Your Wallet — drag or tap money to pay!</h2>
       <div class="wallet-grid" id="wallet-grid"><!-- filled by JS --></div>
     </div>
 
     <aside class="payment-panel">
       <h2 class="panel-heading">✋ Your Payment</h2>
       <div class="payment-selected" id="payment-selected">
-        <p class="payment-empty" id="payment-empty-msg">Tap bills or coins from your wallet.</p>
+        <!-- filled by JS; drop zone for dragged money -->
       </div>
       <div class="payment-total-row">
         <span>Payment Total</span>
@@ -173,6 +173,18 @@
     <h2 class="quiz-question" id="quiz-question-text">Loading question...</h2>
     <div class="quiz-visual" id="quiz-visual"></div>
     <div class="quiz-options" id="quiz-options"><!-- filled by JS --></div>
+
+    <!-- Drag-the-exact-amount question type -->
+    <div class="drag-quiz" id="drag-quiz" style="display:none;">
+      <p class="drag-target-label">Drag money to make exactly <strong id="drag-target-amount">₱0</strong></p>
+      <div class="drag-pool" id="drag-pool"><!-- filled by JS --></div>
+      <div class="drag-dropzone" id="drag-dropzone">
+        <span class="drag-dropzone-hint" id="drag-dropzone-hint">Drop or tap money here</span>
+      </div>
+      <p class="drag-current-total">Your total: <strong id="drag-current-total">₱0</strong></p>
+      <button class="btn btn-checkout" id="btn-check-drag">CHECK ✔</button>
+    </div>
+
     <p class="quiz-feedback" id="quiz-feedback"></p>
   </div>
 </section>

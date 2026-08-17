@@ -362,8 +362,16 @@ button {
   gap: 8px;
   align-content: flex-start;
   margin-bottom: 12px;
+  border: 3px dashed #dccdaa;
+  border-radius: var(--radius-md);
+  padding: 12px;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
-.payment-empty { color: #a89b7e; font-style: italic; font-weight: 600; }
+.payment-selected.drag-hover {
+  background: #eefbf1;
+  border-color: var(--leaf-green);
+}
+.payment-empty { color: #a89b7e; font-style: italic; font-weight: 600; margin: 0; }
 .selected-chip {
   background: var(--leaf-green);
   color: #fff;
@@ -372,6 +380,10 @@ button {
   padding: 8px 14px;
   font-size: 0.95rem;
 }
+
+/* Draggable wallet cards get a grab cursor and lift on drag */
+.money-card[draggable="true"] { cursor: grab; }
+.money-card.dragging { opacity: 0.4; }
 
 /* ---------- Payment / change animation stage ---------- */
 .stage {
@@ -516,6 +528,43 @@ button {
 .quiz-option.correct-answer { background: var(--leaf-green); box-shadow: 0 5px 0 #2c7d4f; }
 .quiz-option.wrong-answer { background: var(--awning-red); box-shadow: 0 5px 0 #b8402f; }
 .quiz-option:disabled { cursor: default; }
+
+/* ---------- Drag-the-exact-amount quiz ---------- */
+.drag-target-label { font-size: 1.15rem; font-weight: 700; margin-bottom: 12px; }
+.drag-target-label strong { color: var(--awning-red); font-size: 1.3rem; }
+
+.drag-pool {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  min-height: 60px;
+}
+.drag-pool .money-card { width: 90px; }
+
+.drag-dropzone {
+  min-height: 90px;
+  border: 3px dashed var(--wood);
+  border-radius: var(--radius-md);
+  background: var(--cream);
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.drag-dropzone.drag-hover {
+  background: #eefbf1;
+  border-color: var(--leaf-green);
+}
+.drag-dropzone-hint { color: #a89b7e; font-style: italic; font-weight: 600; align-self: center; }
+
+.drag-current-total { font-weight: 800; font-size: 1.1rem; margin-bottom: 14px; }
+.drag-current-total strong { color: var(--leaf-green); }
 
 /* Small reusable money chip used inside quiz visuals / change breakdown */
 .mini-money {
