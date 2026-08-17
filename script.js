@@ -1080,7 +1080,7 @@ function checkAnswer(button, chosenValue, correctValue) {
    --------------------------------------------------------- */
 
 function renderFinalScreen() {
-  const title = document.querySelector(".store-title");
+  const title = document.querySelector("#screen-final .store-title");
 
   if (state.stars === 0) {
     title.textContent = "💪 Nice try buddy!";
