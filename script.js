@@ -1080,6 +1080,16 @@ function checkAnswer(button, chosenValue, correctValue) {
    --------------------------------------------------------- */
 
 function renderFinalScreen() {
+  const title = document.querySelector(".store-title");
+
+  if (state.stars === 0) {
+    title.textContent = "💪 Nice try buddy!";
+  } else if (state.stars === state.quiz.length) {
+    title.textContent = "🌟 Perfect Scores!";
+  } else {
+    title.textContent = "🎉 Great Job!";
+  }
+
   document.getElementById("final-stars").textContent =
     `⭐ Stars: ${state.stars}`;
 }
