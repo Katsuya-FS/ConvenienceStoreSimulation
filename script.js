@@ -174,7 +174,11 @@ async function preloadMoneyImages() {
         }),
     );
 
-    await Promise.all(imageLoaders);
+    // Add a 3-second timeout - proceed even if images haven't all loaded
+    await Promise.race([
+      Promise.all(imageLoaders),
+      new Promise((resolve) => setTimeout(resolve, 3000)),
+    ]);
   } finally {
     overlay.hidden = true;
   }
