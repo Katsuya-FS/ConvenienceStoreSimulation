@@ -575,11 +575,9 @@ function finishTransaction(paid) {
   if (change === 0) {
     headline.textContent = "🎉 Perfect! You paid the exact amount!";
     headline.className = "result-headline";
-    state.stars += 1;
   } else {
     headline.textContent = `🎉 Great! The cashier will give you ${formatPeso(change)} change.`;
     headline.className = "result-headline";
-    state.stars += 1;
   }
 
   document.getElementById("result-total").textContent = formatPeso(
