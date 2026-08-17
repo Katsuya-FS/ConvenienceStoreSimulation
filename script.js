@@ -194,31 +194,23 @@ function renderWelcome() {
   );
 }
 
-document
-  .getElementById("btn-start-shopping")
-  .addEventListener("click", async () => {
-    await preloadMoneyImages();
-    renderStoreScreen();
-    showScreen("screen-store");
-  });
+document.getElementById("btn-start-shopping").addEventListener("click", () => {
+  renderStoreScreen();
+  showScreen("screen-store");
+});
 
-document.getElementById("btn-home-quiz").addEventListener("click", async () => {
-  await preloadMoneyImages();
+document.getElementById("btn-home-quiz").addEventListener("click", () => {
   showQuizSetup();
 });
 
-document
-  .getElementById("btn-home-store")
-  .addEventListener("click", async () => {
-    await preloadMoneyImages();
-    renderWelcome();
-    showScreen("screen-welcome");
-  });
+document.getElementById("btn-home-store").addEventListener("click", () => {
+  renderWelcome();
+  showScreen("screen-welcome");
+});
 
 document
   .getElementById("btn-home-quiz-screen")
-  .addEventListener("click", async () => {
-    await preloadMoneyImages();
+  .addEventListener("click", () => {
     renderWelcome();
     showScreen("screen-welcome");
   });
@@ -357,8 +349,7 @@ function renderCart() {
   });
 }
 
-document.getElementById("btn-checkout").addEventListener("click", async () => {
-  await preloadMoneyImages();
+document.getElementById("btn-checkout").addEventListener("click", () => {
   state.totalDue = cartTotal();
   state.walletSupply = freshWalletSupply();
   state.paymentSelected = [];
@@ -531,22 +522,19 @@ function renderPaymentSelected() {
     formatPeso(paymentTotal());
 }
 
-document
-  .getElementById("btn-back-to-store")
-  .addEventListener("click", async () => {
-    await preloadMoneyImages();
-    // Give back anything selected, then return to the store.
-    state.paymentSelected.forEach((item) => {
-      const supply =
-        item.type === "bill"
-          ? state.walletSupply.bills
-          : state.walletSupply.coins;
-      supply[item.value] += 1;
-    });
-    state.paymentSelected = [];
-    renderStoreScreen();
-    showScreen("screen-store");
+document.getElementById("btn-back-to-store").addEventListener("click", () => {
+  // Give back anything selected, then return to the store.
+  state.paymentSelected.forEach((item) => {
+    const supply =
+      item.type === "bill"
+        ? state.walletSupply.bills
+        : state.walletSupply.coins;
+    supply[item.value] += 1;
   });
+  state.paymentSelected = [];
+  renderStoreScreen();
+  showScreen("screen-store");
+});
 
 document.getElementById("btn-give-money").addEventListener("click", () => {
   const paid = paymentTotal();
@@ -660,23 +648,18 @@ function finishTransaction(paid) {
 
 document
   .getElementById("btn-continue-shopping")
-  .addEventListener("click", async () => {
-    await preloadMoneyImages();
+  .addEventListener("click", () => {
     renderStoreScreen();
     showScreen("screen-store");
   });
 
-document.getElementById("btn-go-quiz").addEventListener("click", async () => {
-  await preloadMoneyImages();
+document.getElementById("btn-go-quiz").addEventListener("click", () => {
   showQuizSetup();
 });
 
-document
-  .getElementById("btn-start-quiz")
-  .addEventListener("click", async () => {
-    await preloadMoneyImages();
-    startQuiz();
-  });
+document.getElementById("btn-start-quiz").addEventListener("click", () => {
+  startQuiz();
+});
 
 document.querySelectorAll(".quiz-length-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -719,8 +702,7 @@ function showQuizSetup() {
   showScreen("screen-quiz");
 }
 
-async function startQuiz() {
-  await preloadMoneyImages();
+function startQuiz() {
   const quizSetup = document.getElementById("quiz-setup");
   const quizCard = document.getElementById("quiz-card");
   state.quizLength = getSelectedQuizLength();
@@ -1094,27 +1076,24 @@ function renderFinalScreen() {
     `⭐ Stars: ${state.stars}`;
 }
 
-document
-  .getElementById("btn-play-again")
-  .addEventListener("click", async () => {
-    await preloadMoneyImages();
-    state.totalMoney = 1000;
-    state.cart = [];
-    state.walletSupply = freshWalletSupply();
-    state.paymentSelected = [];
-    state.totalDue = 0;
-    state.stars = 0;
-    state.quiz = [];
-    state.quizIndex = 0;
+document.getElementById("btn-play-again").addEventListener("click", () => {
+  state.totalMoney = 1000;
+  state.cart = [];
+  state.walletSupply = freshWalletSupply();
+  state.paymentSelected = [];
+  state.totalDue = 0;
+  state.stars = 0;
+  state.quiz = [];
+  state.quizIndex = 0;
 
-    const quizSetup = document.getElementById("quiz-setup");
-    const quizCard = document.getElementById("quiz-card");
-    quizSetup.style.display = "block";
-    quizCard.style.display = "none";
+  const quizSetup = document.getElementById("quiz-setup");
+  const quizCard = document.getElementById("quiz-card");
+  quizSetup.style.display = "block";
+  quizCard.style.display = "none";
 
-    renderWelcome();
-    showScreen("screen-welcome");
-  });
+  renderWelcome();
+  showScreen("screen-welcome");
+});
 
 /* ---------------------------------------------------------
    10. START
