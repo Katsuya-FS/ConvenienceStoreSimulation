@@ -10,33 +10,44 @@
 // The store's products. Feel free to add more — the grid
 // will simply show whatever is in this list.
 const PRODUCTS = [
-  { id: "bread",    name: "Bread",           emoji: "🍞", price: 45 },
-  { id: "milk",      name: "Milk",            emoji: "🥛", price: 60 },
-  { id: "choco",     name: "Chocolate",       emoji: "🍫", price: 35 },
-  { id: "juice",     name: "Juice",           emoji: "🧃", price: 25 },
-  { id: "cookies",   name: "Cookies",         emoji: "🍪", price: 30 },
-  { id: "noodles",   name: "Instant Noodles", emoji: "🍜", price: 18 },
-  { id: "candy",     name: "Candy",           emoji: "🍬", price: 10 },
-  { id: "softdrink", name: "Soft Drink",      emoji: "🥤", price: 35 },
-  { id: "water",     name: "Water",           emoji: "💧", price: 20 },
-  { id: "chips",     name: "Chips",           emoji: "🍟", price: 55 },
-  { id: "soap",      name: "Soap",            emoji: "🧼", price: 40 },
-  { id: "sandwich",  name: "Sandwich",        emoji: "🥪", price: 75 },
+  { id: "bread", name: "Bread", emoji: "🍞", price: 45 },
+  { id: "milk", name: "Milk", emoji: "🥛", price: 60 },
+  { id: "choco", name: "Chocolate", emoji: "🍫", price: 35 },
+  { id: "juice", name: "Juice", emoji: "🧃", price: 25 },
+  { id: "cookies", name: "Cookies", emoji: "🍪", price: 30 },
+  { id: "noodles", name: "Instant Noodles", emoji: "🍜", price: 18 },
+  { id: "candy", name: "Candy", emoji: "🍬", price: 10 },
+  { id: "softdrink", name: "Soft Drink", emoji: "🥤", price: 35 },
+  { id: "water", name: "Water", emoji: "💧", price: 20 },
+  { id: "chips", name: "Chips", emoji: "🍟", price: 55 },
+  { id: "soap", name: "Soap", emoji: "🧼", price: 40 },
+  { id: "sandwich", name: "Sandwich", emoji: "🥪", price: 75 },
 ];
 
 // Bills and coins used in the game, largest to smallest.
 // (₱20 exists as both a bill and a coin in real life — we treat
 // the wallet's ₱20 as a coin and give a separate ₱20 bill too,
 // so kids see both forms.)
-const BILLS = [1000, 500, 200, 100, 50, 20];
+const BILLS = [1000, 500, 200, 100, 50];
 const COINS = [20, 10, 5, 1];
 const ALL_DENOMS_DESC = [1000, 500, 200, 100, 50, 20, 10, 5, 1];
+const MONEY_DENOMINATIONS = [
+  { type: "bill", value: 1000, image: "assets/1000PesoBill.png" },
+  { type: "bill", value: 500, image: "assets/500PesoBill.jpg" },
+  { type: "bill", value: 200, image: "assets/200PesoBill.png" },
+  { type: "bill", value: 100, image: "assets/100PesoBill.jpg" },
+  { type: "bill", value: 50, image: "assets/50PesoBill.jpg" },
+  { type: "coin", value: 20, image: "assets/20PesoBill.png" },
+  { type: "coin", value: 10, image: "assets/10PesoBill.png" },
+  { type: "coin", value: 5, image: "assets/5PesoBill.png" },
+  { type: "coin", value: 1, image: "assets/1PesoBill.png" },
+];
 
 // Starting supply of each denomination in the player's wallet.
 // Generous so many different combinations are possible.
 function freshWalletSupply() {
   return {
-    bills: { 1000: 2, 500: 3, 200: 4, 100: 6, 50: 6, 20: 6 },
+    bills: { 1000: 2, 500: 3, 200: 4, 100: 6, 50: 6 },
     coins: { 20: 6, 10: 6, 5: 6, 1: 10 },
   };
 }
@@ -46,14 +57,15 @@ function freshWalletSupply() {
    --------------------------------------------------------- */
 
 const state = {
-  totalMoney: 1000,      // the player's overall starting budget
-  cart: [],              // [{ id, qty }]
+  totalMoney: 1000, // the player's overall starting budget
+  cart: [], // [{ id, qty }]
   walletSupply: freshWalletSupply(),
-  paymentSelected: [],   // [{ value, type: 'bill'|'coin' }]
-  totalDue: 0,           // cost of the current cart at checkout time
+  paymentSelected: [], // [{ value, type: 'bill'|'coin' }]
+  totalDue: 0, // cost of the current cart at checkout time
   stars: 0,
   quiz: [],
   quizIndex: 0,
+  quizLength: 5,
 };
 
 /* ---------------------------------------------------------
@@ -65,11 +77,21 @@ function formatPeso(amount) {
 }
 
 function isCoinValue(value) {
-  return COINS.includes(value) && value <= 20 && value !== 50 && value !== 100 && value !== 200 && value !== 500 && value !== 1000;
+  return (
+    COINS.includes(value) &&
+    value <= 20 &&
+    value !== 50 &&
+    value !== 100 &&
+    value !== 200 &&
+    value !== 500 &&
+    value !== 1000
+  );
 }
 
 function showScreen(id) {
-  document.querySelectorAll(".screen").forEach((el) => el.classList.remove("active"));
+  document
+    .querySelectorAll(".screen")
+    .forEach((el) => el.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
 
@@ -93,12 +115,40 @@ function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function getMoneyAsset(value, type) {
+  const match = MONEY_DENOMINATIONS.find(
+    (item) => item.value === value && item.type === type,
+  );
+  return match ? match.image : null;
+}
+
+function moneyIconMarkup(value, type) {
+  const asset = getMoneyAsset(value, type);
+  if (asset) {
+    return `
+      <img
+        class="money-image"
+        src="${asset}"
+        alt="Philippine ${formatPeso(value)} ${type === "bill" ? "bill" : "coin"}"
+      />
+      <span class="money-value">${formatPeso(value)}</span>
+    `;
+  }
+
+  return `
+    <div class="money-coin-circle">₱</div>
+    <span class="money-value">${formatPeso(value)}</span>
+  `;
+}
+
 /* ---------------------------------------------------------
    4. WELCOME SCREEN
    --------------------------------------------------------- */
 
 function renderWelcome() {
-  document.getElementById("welcome-money-amount").textContent = formatPeso(state.totalMoney);
+  document.getElementById("welcome-money-amount").textContent = formatPeso(
+    state.totalMoney,
+  );
 }
 
 document.getElementById("btn-start-shopping").addEventListener("click", () => {
@@ -106,14 +156,35 @@ document.getElementById("btn-start-shopping").addEventListener("click", () => {
   showScreen("screen-store");
 });
 
+document.getElementById("btn-home-quiz").addEventListener("click", () => {
+  showQuizSetup();
+});
+
+document.getElementById("btn-home-store").addEventListener("click", () => {
+  renderWelcome();
+  showScreen("screen-welcome");
+});
+
+document
+  .getElementById("btn-home-quiz-screen")
+  .addEventListener("click", () => {
+    renderWelcome();
+    showScreen("screen-welcome");
+  });
+
 /* ---------------------------------------------------------
    5. STORE SCREEN (products + cart)
    --------------------------------------------------------- */
 
 function renderStoreScreen() {
-  document.getElementById("store-total-money").textContent = formatPeso(state.totalMoney);
-  document.getElementById("store-cart-total").textContent = formatPeso(cartTotal());
-  document.getElementById("store-remaining").textContent = formatPeso(state.totalMoney - cartTotal());
+  document.getElementById("store-total-money").textContent = formatPeso(
+    state.totalMoney,
+  );
+  document.getElementById("store-cart-total").textContent =
+    formatPeso(cartTotal());
+  document.getElementById("store-remaining").textContent = formatPeso(
+    state.totalMoney - cartTotal(),
+  );
   renderProductsGrid();
   renderCart();
 }
@@ -222,7 +293,8 @@ function renderCart() {
     checkoutBtn.disabled = false;
   }
 
-  document.getElementById("cart-total-amount").textContent = formatPeso(cartTotal());
+  document.getElementById("cart-total-amount").textContent =
+    formatPeso(cartTotal());
 
   list.querySelectorAll("[data-action]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -247,7 +319,9 @@ document.getElementById("btn-checkout").addEventListener("click", () => {
    --------------------------------------------------------- */
 
 function renderPaymentScreen() {
-  document.getElementById("payment-total-due").textContent = formatPeso(state.totalDue);
+  document.getElementById("payment-total-due").textContent = formatPeso(
+    state.totalDue,
+  );
   document.getElementById("payment-message").textContent = "";
   document.getElementById("payment-message").className = "cart-message";
   renderWalletGrid();
@@ -259,13 +333,33 @@ function renderWalletGrid() {
   grid.innerHTML = "";
 
   function makeMoneyCard(value, type) {
-    const supply = type === "bill" ? state.walletSupply.bills : state.walletSupply.coins;
+    const supply =
+      type === "bill" ? state.walletSupply.bills : state.walletSupply.coins;
     const count = supply[value];
     const btn = document.createElement("button");
     btn.className = `money-card ${type}`;
     btn.disabled = count <= 0;
     btn.draggable = count > 0;
-    btn.innerHTML = `<span class="money-emoji">${type === "bill" ? "💵" : "🪙"}</span> ${formatPeso(value)}<br><small>×${count}</small>`;
+
+    const billPalettes = {
+      1000: ["#2d7ec6", "#184d8d"],
+      500: ["#2f8f7c", "#0d5a4c"],
+      200: ["#d99f2b", "#8e5c00"],
+      100: ["#7c63d2", "#47309a"],
+      50: ["#d76666", "#8d2f2b"],
+      20: ["#f0a64c", "#aa5f08"],
+    };
+
+    if (type === "bill") {
+      const [primary, accent] = billPalettes[value] || ["#2d7ec6", "#184d8d"];
+      btn.style.setProperty("--bill-primary", primary);
+      btn.style.setProperty("--bill-accent", accent);
+    }
+
+    btn.innerHTML = `
+      ${moneyIconMarkup(value, type)}
+      <small class="money-count">×${count}</small>
+    `;
 
     // Tap/click still works (important for touch devices).
     btn.addEventListener("click", () => addPaymentMoney(value, type));
@@ -309,7 +403,8 @@ paymentDropzone.addEventListener("drop", (e) => {
 });
 
 function addPaymentMoney(value, type) {
-  const supply = type === "bill" ? state.walletSupply.bills : state.walletSupply.coins;
+  const supply =
+    type === "bill" ? state.walletSupply.bills : state.walletSupply.coins;
   if (supply[value] <= 0) return;
 
   supply[value] -= 1;
@@ -320,7 +415,8 @@ function addPaymentMoney(value, type) {
 
 function removePaymentMoney(index) {
   const item = state.paymentSelected[index];
-  const supply = item.type === "bill" ? state.walletSupply.bills : state.walletSupply.coins;
+  const supply =
+    item.type === "bill" ? state.walletSupply.bills : state.walletSupply.coins;
   supply[item.value] += 1;
   state.paymentSelected.splice(index, 1);
   renderWalletGrid();
@@ -346,20 +442,26 @@ function renderPaymentSelected() {
     state.paymentSelected.forEach((item, index) => {
       const chip = document.createElement("button");
       chip.className = "selected-chip";
-      chip.textContent = `${item.type === "bill" ? "💵" : "🪙"} ${formatPeso(item.value)}`;
+      chip.innerHTML = `
+        <span class="selected-chip-icon">${moneyIconMarkup(item.value, item.type)}</span>
+      `;
       chip.title = "Tap to put this back in your wallet";
       chip.addEventListener("click", () => removePaymentMoney(index));
       container.appendChild(chip);
     });
   }
 
-  document.getElementById("payment-total-amount").textContent = formatPeso(paymentTotal());
+  document.getElementById("payment-total-amount").textContent =
+    formatPeso(paymentTotal());
 }
 
 document.getElementById("btn-back-to-store").addEventListener("click", () => {
   // Give back anything selected, then return to the store.
   state.paymentSelected.forEach((item) => {
-    const supply = item.type === "bill" ? state.walletSupply.bills : state.walletSupply.coins;
+    const supply =
+      item.type === "bill"
+        ? state.walletSupply.bills
+        : state.walletSupply.coins;
     supply[item.value] += 1;
   });
   state.paymentSelected = [];
@@ -387,19 +489,11 @@ document.getElementById("btn-give-money").addEventListener("click", () => {
 function playGiveMoneyAnimation(onDone) {
   const flying = document.getElementById("flying-money-pay");
   const caption = document.getElementById("stage-caption-pay");
-  flying.innerHTML = state.paymentSelected
-    .map((item) => (item.type === "bill" ? "💵" : "🪙"))
-    .join(" ");
-  caption.textContent = "Giving money...";
-  flying.className = "flying-money fly-right";
+  flying.innerHTML = "";
+  caption.textContent = "";
+  flying.className = "flying-money";
 
-  // Restart animation cleanly, then move to the result screen.
-  window.setTimeout(() => {
-    flying.className = "flying-money";
-    caption.textContent = "";
-  }, 950);
-
-  window.setTimeout(onDone, 1000);
+  window.setTimeout(onDone, 200);
 }
 
 /* ---------------------------------------------------------
@@ -438,10 +532,14 @@ function finishTransaction(paid) {
     state.stars += 1;
   }
 
-  document.getElementById("result-total").textContent = formatPeso(state.totalDue);
+  document.getElementById("result-total").textContent = formatPeso(
+    state.totalDue,
+  );
   document.getElementById("result-paid").textContent = formatPeso(paid);
   document.getElementById("result-change").textContent = formatPeso(change);
-  document.getElementById("stars-earned").textContent = "⭐".repeat(Math.min(state.stars, 10));
+  document.getElementById("stars-earned").textContent = "⭐".repeat(
+    Math.min(state.stars, 10),
+  );
 
   const breakdownEl = document.getElementById("change-breakdown");
   const sumEl = document.getElementById("change-sum");
@@ -454,35 +552,28 @@ function finishTransaction(paid) {
 
   if (change > 0) {
     const breakdown = computeChangeBreakdown(change);
-    const emojis = [];
-    breakdown.forEach(({ value, count }) => {
-      for (let i = 0; i < count; i++) {
-        emojis.push(value >= 50 || value === 1000 ? "💵" : "🪙");
-      }
-    });
-    flying.innerHTML = emojis.join(" ");
-    caption.textContent = "Here is your change!";
-    flying.className = "flying-money fly-left";
+    flying.innerHTML = "";
+    caption.textContent = "";
+    flying.className = "flying-money";
     changeStage.style.display = "flex";
 
-    window.setTimeout(() => {
-      flying.className = "flying-money";
-      caption.textContent = "";
+    breakdown.forEach(({ value, count }) => {
+      for (let i = 0; i < count; i++) {
+        const chip = document.createElement("div");
+        chip.className =
+          value >= 50 || value === 1000 ? "mini-money bill" : "mini-money coin";
+        chip.innerHTML = moneyIconMarkup(
+          value,
+          value >= 50 || value === 1000 ? "bill" : "coin",
+        );
+        breakdownEl.appendChild(chip);
+      }
+    });
 
-      breakdown.forEach(({ value, count }) => {
-        for (let i = 0; i < count; i++) {
-          const chip = document.createElement("div");
-          chip.className = value >= 50 || value === 1000 ? "mini-money bill" : "mini-money coin";
-          chip.textContent = formatPeso(value);
-          breakdownEl.appendChild(chip);
-        }
-      });
-
-      const sumText = breakdown
-        .flatMap(({ value, count }) => Array(count).fill(value))
-        .join(" + ");
-      sumEl.textContent = `${sumText} = ${formatPeso(change)}`;
-    }, 950);
+    const sumText = breakdown
+      .flatMap(({ value, count }) => Array(count).fill(value))
+      .join(" + ");
+    sumEl.textContent = `${sumText} = ${formatPeso(change)}`;
   } else {
     changeStage.style.display = "none";
   }
@@ -490,13 +581,32 @@ function finishTransaction(paid) {
   showScreen("screen-result");
 }
 
-document.getElementById("btn-continue-shopping").addEventListener("click", () => {
-  renderStoreScreen();
-  showScreen("screen-store");
-});
+document
+  .getElementById("btn-continue-shopping")
+  .addEventListener("click", () => {
+    renderStoreScreen();
+    showScreen("screen-store");
+  });
 
 document.getElementById("btn-go-quiz").addEventListener("click", () => {
+  showQuizSetup();
+});
+
+document.getElementById("btn-start-quiz").addEventListener("click", () => {
   startQuiz();
+});
+
+document.querySelectorAll(".quiz-length-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document
+      .querySelectorAll(".quiz-length-btn")
+      .forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    const customWrap = document.getElementById("quiz-custom-wrap");
+    customWrap.style.display =
+      btn.dataset.length === "custom" ? "block" : "none";
+  });
 });
 
 /* ---------------------------------------------------------
@@ -505,18 +615,45 @@ document.getElementById("btn-go-quiz").addEventListener("click", () => {
 
 const QUIZ_LENGTH = 6;
 
+function getSelectedQuizLength() {
+  const selected = document.querySelector(".quiz-length-btn.active");
+  if (!selected) return state.quizLength;
+
+  const value = selected.dataset.length;
+  if (value === "custom") {
+    const customInput = document.getElementById("quiz-custom-input");
+    const customValue = Number(customInput.value || state.quizLength);
+    return Math.min(Math.max(customValue, 1), 20);
+  }
+
+  return Number(value);
+}
+
+function showQuizSetup() {
+  const quizSetup = document.getElementById("quiz-setup");
+  const quizCard = document.getElementById("quiz-card");
+  quizSetup.style.display = "block";
+  quizCard.style.display = "none";
+  showScreen("screen-quiz");
+}
+
 function startQuiz() {
-  state.quiz = generateQuiz(QUIZ_LENGTH);
+  const quizSetup = document.getElementById("quiz-setup");
+  const quizCard = document.getElementById("quiz-card");
+  state.quizLength = getSelectedQuizLength();
+  state.quiz = generateQuiz(state.quizLength);
   state.quizIndex = 0;
+  quizSetup.style.display = "none";
+  quizCard.style.display = "block";
   renderQuizQuestion();
   showScreen("screen-quiz");
 }
 
 function generateQuiz(length) {
-  // Cycle through all three question types so every skill gets practiced:
-  // identifying a single bill/coin, counting a combination, and building
-  // an exact amount by dragging money.
-  const makers = [makeIdentifyQuestion, makeComboQuestion, makeDragQuestion];
+  // Cycle through the three quiz types so kids keep practicing:
+  // subtraction, counting a combination, and building an exact amount
+  // by dragging money.
+  const makers = [makeSubtractionQuestion, makeComboQuestion, makeDragQuestion];
   const questions = [];
   for (let i = 0; i < length; i++) {
     questions.push(makers[i % makers.length]());
@@ -524,18 +661,28 @@ function generateQuiz(length) {
   return questions;
 }
 
-function makeIdentifyQuestion() {
-  const value = ALL_DENOMS_DESC[randomInt(0, ALL_DENOMS_DESC.length - 1)];
-  const isCoin = value <= 20;
-  const distractors = shuffle(ALL_DENOMS_DESC.filter((v) => v !== value)).slice(0, 3);
-  const options = shuffle([value, ...distractors]);
+function makeSubtractionQuestion() {
+  const easyTotals = [10, 15, 20, 25, 30, 35, 40, 45, 50];
+  const easySubtracts = [1, 2, 3, 5, 10, 15, 20];
+
+  const total = easyTotals[randomInt(0, easyTotals.length - 1)];
+  const subtract = easySubtracts[randomInt(0, easySubtracts.length - 1)];
+  const safeSubtract = Math.min(subtract, total - 1);
+  const answer = total - safeSubtract;
+
+  const distractors = new Set();
+  while (distractors.size < 3) {
+    const wiggle = randomInt(-5, 5);
+    const candidate = Math.max(1, answer + wiggle);
+    if (candidate !== answer && candidate <= 50) distractors.add(candidate);
+  }
 
   return {
-    type: "identify",
-    prompt: "💰 What is the value of this money?",
-    visual: [{ value, isCoin }],
-    options,
-    correct: value,
+    type: "subtract",
+    prompt: "Let's subtract! How much is left?",
+    visual: [{ total, subtract: safeSubtract }],
+    options: shuffle([answer, ...distractors]),
+    correct: answer,
   };
 }
 
@@ -583,11 +730,13 @@ function makeDragQuestion() {
     distractorPieces.push(value);
   }
 
-  const pool = shuffle([...correctPieces, ...distractorPieces]).map((value, index) => ({
-    uid: `d${index}-${value}-${Math.random().toString(36).slice(2, 7)}`,
-    value,
-    isCoin: value <= 20,
-  }));
+  const pool = shuffle([...correctPieces, ...distractorPieces]).map(
+    (value, index) => ({
+      uid: `d${index}-${value}-${Math.random().toString(36).slice(2, 7)}`,
+      value,
+      isCoin: value <= 20,
+    }),
+  );
 
   return {
     type: "drag",
@@ -599,7 +748,8 @@ function makeDragQuestion() {
 
 function renderQuizQuestion() {
   const question = state.quiz[state.quizIndex];
-  document.getElementById("quiz-progress").textContent = `${state.quizIndex + 1} / ${state.quiz.length}`;
+  document.getElementById("quiz-progress").textContent =
+    `${state.quizIndex + 1} / ${state.quiz.length}`;
   document.getElementById("quiz-question-text").textContent = question.prompt;
   document.getElementById("quiz-feedback").textContent = "";
   document.getElementById("quiz-feedback").className = "quiz-feedback";
@@ -621,25 +771,33 @@ function renderQuizQuestion() {
     dragQuizEl.style.display = "none";
 
     visual.innerHTML = "";
-    question.visual.forEach((piece) => {
-      const chip = document.createElement("div");
-      chip.className = piece.isCoin ? "mini-money coin" : "mini-money bill";
-      // For "identify this money" questions, don't print the amount on the
-      // chip itself — that would give away the answer. Combo questions
-      // still show each amount, since the skill there is adding them up.
-      chip.textContent =
-        question.type === "identify"
-          ? `${piece.isCoin ? "🪙" : "💵"} ?`
-          : `${piece.isCoin ? "🪙" : "💵"} ${formatPeso(piece.value)}`;
-      visual.appendChild(chip);
-    });
+
+    if (question.type === "subtract") {
+      const equation = document.createElement("div");
+      equation.className = "quiz-equation";
+      const { total, subtract } = question.visual[0];
+      equation.textContent = `${formatPeso(total)} - ${formatPeso(subtract)} = ?`;
+      visual.appendChild(equation);
+    } else {
+      question.visual.forEach((piece) => {
+        const chip = document.createElement("div");
+        chip.className = piece.isCoin ? "mini-money coin" : "mini-money bill";
+        chip.innerHTML = moneyIconMarkup(
+          piece.value,
+          piece.isCoin ? "coin" : "bill",
+        );
+        visual.appendChild(chip);
+      });
+    }
 
     optionsEl.innerHTML = "";
     question.options.forEach((optionValue) => {
       const btn = document.createElement("button");
       btn.className = "quiz-option";
       btn.textContent = formatPeso(optionValue);
-      btn.addEventListener("click", () => checkAnswer(btn, optionValue, question.correct));
+      btn.addEventListener("click", () =>
+        checkAnswer(btn, optionValue, question.correct),
+      );
       optionsEl.appendChild(btn);
     });
   }
@@ -652,7 +810,9 @@ let dragAnswerUids = [];
 
 function renderDragQuestion(question) {
   dragAnswerUids = [];
-  document.getElementById("drag-target-amount").textContent = formatPeso(question.target);
+  document.getElementById("drag-target-amount").textContent = formatPeso(
+    question.target,
+  );
 
   const pool = document.getElementById("drag-pool");
   const dropzone = document.getElementById("drag-dropzone");
@@ -666,6 +826,18 @@ function renderDragQuestion(question) {
 
   updateDragTotal(question);
 
+  pool.ondragover = (e) => {
+    e.preventDefault();
+    pool.classList.add("drag-hover");
+  };
+  pool.ondragleave = () => pool.classList.remove("drag-hover");
+  pool.ondrop = (e) => {
+    e.preventDefault();
+    pool.classList.remove("drag-hover");
+    const uid = e.dataTransfer.getData("text/plain");
+    moveDragTileToAnswer(question, uid, false);
+  };
+
   // Allow dropping tiles onto the dropzone.
   dropzone.ondragover = (e) => {
     e.preventDefault();
@@ -676,7 +848,7 @@ function renderDragQuestion(question) {
     e.preventDefault();
     dropzone.classList.remove("drag-hover");
     const uid = e.dataTransfer.getData("text/plain");
-    moveDragTileToAnswer(question, uid);
+    moveDragTileToAnswer(question, uid, true);
   };
 }
 
@@ -685,7 +857,7 @@ function makeDragTile(piece) {
   tile.className = piece.isCoin ? "money-card coin" : "money-card bill";
   tile.draggable = true;
   tile.dataset.uid = piece.uid;
-  tile.innerHTML = `<span class="money-emoji">${piece.isCoin ? "🪙" : "💵"}</span> ${formatPeso(piece.value)}`;
+  tile.innerHTML = moneyIconMarkup(piece.value, piece.isCoin ? "coin" : "bill");
 
   tile.addEventListener("dragstart", (e) => {
     e.dataTransfer.setData("text/plain", piece.uid);
@@ -708,10 +880,15 @@ function makeDragTile(piece) {
   return tile;
 }
 
-function moveDragTileToAnswer(question, uid) {
-  if (!uid || dragAnswerUids.includes(uid)) return;
-  if (!question.pool.some((p) => p.uid === uid)) return;
-  dragAnswerUids.push(uid);
+function moveDragTileToAnswer(question, uid, addToAnswer) {
+  if (!uid || !question.pool.some((p) => p.uid === uid)) return;
+
+  if (addToAnswer) {
+    if (!dragAnswerUids.includes(uid)) dragAnswerUids.push(uid);
+  } else {
+    dragAnswerUids = dragAnswerUids.filter((id) => id !== uid);
+  }
+
   refreshDragZones(question);
 }
 
@@ -756,7 +933,9 @@ document.getElementById("btn-check-drag").addEventListener("click", () => {
 
   const feedback = document.getElementById("quiz-feedback");
   document.getElementById("btn-check-drag").disabled = true;
-  document.querySelectorAll("#drag-pool .money-card, #drag-dropzone .money-card").forEach((t) => (t.disabled = true));
+  document
+    .querySelectorAll("#drag-pool .money-card, #drag-dropzone .money-card")
+    .forEach((t) => (t.disabled = true));
 
   if (total === question.target) {
     feedback.textContent = `🎉 Correct! That's ${formatPeso(total)}!`;
@@ -818,7 +997,8 @@ function checkAnswer(button, chosenValue, correctValue) {
    --------------------------------------------------------- */
 
 function renderFinalScreen() {
-  document.getElementById("final-stars").textContent = `⭐ Stars: ${state.stars}`;
+  document.getElementById("final-stars").textContent =
+    `⭐ Stars: ${state.stars}`;
 }
 
 document.getElementById("btn-play-again").addEventListener("click", () => {
@@ -830,6 +1010,11 @@ document.getElementById("btn-play-again").addEventListener("click", () => {
   state.stars = 0;
   state.quiz = [];
   state.quizIndex = 0;
+
+  const quizSetup = document.getElementById("quiz-setup");
+  const quizCard = document.getElementById("quiz-card");
+  quizSetup.style.display = "block";
+  quizCard.style.display = "none";
 
   renderWelcome();
   showScreen("screen-welcome");

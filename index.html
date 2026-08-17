@@ -1,213 +1,292 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>My Little Convenience Store — Peso Money Game</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Little Convenience Store — Peso Money Game</title>
 
-<!-- Playful, rounded font that reads well for young children -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Playful, rounded font that reads well for young children -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-<link rel="stylesheet" href="style.css" />
-</head>
-<body>
-
-<!-- ======================================================= -->
-<!-- SCREEN 1: WELCOME SCREEN                                 -->
-<!-- ======================================================= -->
-<section id="screen-welcome" class="screen active">
-  <div class="welcome-card">
-    <div class="roof"></div>
-    <h1 class="store-title">🏪 My Little<br>Convenience Store</h1>
-    <p class="subtitle">Let's go shopping!</p>
-    <div class="money-badge">
-      <span class="badge-label">Your Money</span>
-      <span class="badge-amount" id="welcome-money-amount">₱1,000</span>
-    </div>
-    <button class="btn btn-big btn-bounce" id="btn-start-shopping">START SHOPPING 🛒</button>
-    <p class="welcome-hint">You'll learn to count peso bills and coins!</p>
-  </div>
-</section>
-
-<!-- ======================================================= -->
-<!-- SCREEN 2: THE STORE (products + cart side-by-side)      -->
-<!-- ======================================================= -->
-<section id="screen-store" class="screen">
-  <header class="topbar">
-    <div class="topbar-title">🏪 My Little Store</div>
-    <div class="money-pill">
-      <div class="money-pill-item">
-        <span class="pill-label">Your Money</span>
-        <span class="pill-value" id="store-total-money">₱1,000</span>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- ======================================================= -->
+    <!-- SCREEN 1: WELCOME SCREEN                                 -->
+    <!-- ======================================================= -->
+    <section id="screen-welcome" class="screen active">
+      <div class="welcome-card">
+        <div class="roof"></div>
+        <h1 class="store-title">🏪 My Little<br />Convenience Store</h1>
+        <p class="subtitle">Let's go shopping!</p>
+        <div class="money-badge">
+          <span class="badge-label">Your Money</span>
+          <span class="badge-amount" id="welcome-money-amount">₱1,000</span>
+        </div>
+        <button class="btn btn-big btn-bounce" id="btn-start-shopping">
+          START SHOPPING 🛒
+        </button>
+        <button class="btn btn-secondary" id="btn-home-quiz">
+          GO TO QUIZ 🧠
+        </button>
+        <p class="welcome-hint">You'll learn to count peso bills and coins!</p>
       </div>
-      <div class="money-pill-item">
-        <span class="pill-label">In Cart</span>
-        <span class="pill-value" id="store-cart-total">₱0</span>
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- SCREEN 2: THE STORE (products + cart side-by-side)      -->
+    <!-- ======================================================= -->
+    <section id="screen-store" class="screen">
+      <header class="topbar">
+        <div class="topbar-title">🏪 My Little Store</div>
+        <div class="topbar-actions">
+          <button class="btn btn-secondary topbar-btn" id="btn-home-store">
+            🏠 HOME
+          </button>
+        </div>
+        <div class="money-pill">
+          <div class="money-pill-item">
+            <span class="pill-label">Your Money</span>
+            <span class="pill-value" id="store-total-money">₱1,000</span>
+          </div>
+          <div class="money-pill-item">
+            <span class="pill-label">In Cart</span>
+            <span class="pill-value" id="store-cart-total">₱0</span>
+          </div>
+          <div class="money-pill-item">
+            <span class="pill-label">Left</span>
+            <span class="pill-value" id="store-remaining">₱1,000</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="store-layout">
+        <div class="products-panel">
+          <h2 class="panel-heading">🛍️ Pick your snacks!</h2>
+          <div class="products-grid" id="products-grid">
+            <!-- filled by JS -->
+          </div>
+        </div>
+
+        <aside class="cart-panel">
+          <h2 class="panel-heading">🛒 My Cart</h2>
+          <ul class="cart-list" id="cart-list">
+            <li class="cart-empty" id="cart-empty-msg">
+              Your cart is empty. Add something yummy!
+            </li>
+          </ul>
+          <div class="cart-total-row">
+            <span>TOTAL</span>
+            <span id="cart-total-amount">₱0</span>
+          </div>
+          <button class="btn btn-checkout" id="btn-checkout" disabled>
+            CHECKOUT ➜
+          </button>
+          <p class="cart-message" id="cart-message"></p>
+        </aside>
       </div>
-      <div class="money-pill-item">
-        <span class="pill-label">Left</span>
-        <span class="pill-value" id="store-remaining">₱1,000</span>
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- SCREEN 3: PAYMENT (choose bills & coins)                 -->
+    <!-- ======================================================= -->
+    <section id="screen-payment" class="screen">
+      <header class="topbar">
+        <div class="topbar-title">💰 Time to Pay!</div>
+        <div class="money-pill">
+          <div class="money-pill-item">
+            <span class="pill-label">You Need</span>
+            <span class="pill-value" id="payment-total-due">₱0</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="payment-layout">
+        <div class="wallet-panel">
+          <h2 class="panel-heading">
+            👛 Your Wallet — drag or tap money to pay!
+          </h2>
+          <div class="wallet-grid" id="wallet-grid"><!-- filled by JS --></div>
+        </div>
+
+        <aside class="payment-panel">
+          <h2 class="panel-heading">✋ Your Payment</h2>
+          <div class="payment-selected" id="payment-selected">
+            <!-- filled by JS; drop zone for dragged money -->
+          </div>
+          <div class="payment-total-row">
+            <span>Payment Total</span>
+            <span id="payment-total-amount">₱0</span>
+          </div>
+          <button class="btn btn-checkout" id="btn-give-money">
+            GIVE MONEY TO CASHIER 👩
+          </button>
+          <p class="cart-message" id="payment-message"></p>
+          <button class="btn btn-secondary" id="btn-back-to-store">
+            ⬅ Back to Store
+          </button>
+        </aside>
       </div>
-    </div>
-  </header>
 
-  <div class="store-layout">
-    <div class="products-panel">
-      <h2 class="panel-heading">🛍️ Pick your snacks!</h2>
-      <div class="products-grid" id="products-grid"><!-- filled by JS --></div>
-    </div>
-
-    <aside class="cart-panel">
-      <h2 class="panel-heading">🛒 My Cart</h2>
-      <ul class="cart-list" id="cart-list">
-        <li class="cart-empty" id="cart-empty-msg">Your cart is empty. Add something yummy!</li>
-      </ul>
-      <div class="cart-total-row">
-        <span>TOTAL</span>
-        <span id="cart-total-amount">₱0</span>
+      <!-- Animation stage: student -> cashier -->
+      <div class="stage" id="pay-stage">
+        <div class="actor" id="actor-student">🧒</div>
+        <div class="flying-money" id="flying-money-pay"></div>
+        <div class="stage-caption" id="stage-caption-pay"></div>
+        <div class="actor" id="actor-cashier">👩‍🦱</div>
       </div>
-      <button class="btn btn-checkout" id="btn-checkout" disabled>CHECKOUT ➜</button>
-      <p class="cart-message" id="cart-message"></p>
-    </aside>
-  </div>
-</section>
+    </section>
 
-<!-- ======================================================= -->
-<!-- SCREEN 3: PAYMENT (choose bills & coins)                 -->
-<!-- ======================================================= -->
-<section id="screen-payment" class="screen">
-  <header class="topbar">
-    <div class="topbar-title">💰 Time to Pay!</div>
-    <div class="money-pill">
-      <div class="money-pill-item">
-        <span class="pill-label">You Need</span>
-        <span class="pill-value" id="payment-total-due">₱0</span>
+    <!-- ======================================================= -->
+    <!-- SCREEN 4: TRANSACTION RESULT (change simulation)         -->
+    <!-- ======================================================= -->
+    <section id="screen-result" class="screen">
+      <header class="topbar">
+        <div class="topbar-title">🧾 Receipt Time</div>
+      </header>
+
+      <div class="result-card">
+        <div id="result-headline" class="result-headline"></div>
+
+        <div class="result-numbers">
+          <div class="result-row">
+            <span>Your items cost</span><strong id="result-total">₱0</strong>
+          </div>
+          <div class="result-row">
+            <span>You paid</span><strong id="result-paid">₱0</strong>
+          </div>
+          <div class="result-row result-change">
+            <span>Your change</span><strong id="result-change">₱0</strong>
+          </div>
+        </div>
+
+        <!-- Cashier hands back change -->
+        <div class="stage" id="change-stage">
+          <div class="actor">👩‍🦱</div>
+          <div class="stage-caption" id="stage-caption-change"></div>
+          <div class="flying-money" id="flying-money-change"></div>
+          <div class="actor">🧒</div>
+        </div>
+
+        <div class="change-breakdown" id="change-breakdown"></div>
+        <div class="change-sum" id="change-sum"></div>
+
+        <div class="stars-earned" id="stars-earned"></div>
+
+        <div class="result-buttons">
+          <button class="btn btn-big" id="btn-continue-shopping">
+            CONTINUE SHOPPING 🛍️
+          </button>
+          <button class="btn btn-secondary" id="btn-go-quiz">
+            TRY THE MONEY QUIZ 🧠
+          </button>
+        </div>
       </div>
-    </div>
-  </header>
+    </section>
 
-  <div class="payment-layout">
-    <div class="wallet-panel">
-      <h2 class="panel-heading">👛 Your Wallet — drag or tap money to pay!</h2>
-      <div class="wallet-grid" id="wallet-grid"><!-- filled by JS --></div>
-    </div>
+    <!-- ======================================================= -->
+    <!-- SCREEN 5: MONEY LEARNING QUIZ                             -->
+    <!-- ======================================================= -->
+    <section id="screen-quiz" class="screen">
+      <header class="topbar">
+        <div class="topbar-title">🧠 Money Quiz</div>
+        <div class="topbar-actions">
+          <button
+            class="btn btn-secondary topbar-btn"
+            id="btn-home-quiz-screen"
+          >
+            🏠 HOME
+          </button>
+        </div>
+        <div class="money-pill">
+          <div class="money-pill-item">
+            <span class="pill-label">Question</span>
+            <span class="pill-value" id="quiz-progress">1 / 6</span>
+          </div>
+        </div>
+      </header>
 
-    <aside class="payment-panel">
-      <h2 class="panel-heading">✋ Your Payment</h2>
-      <div class="payment-selected" id="payment-selected">
-        <!-- filled by JS; drop zone for dragged money -->
+      <div class="quiz-setup" id="quiz-setup">
+        <p class="quiz-config-title">Number of quiz items</p>
+        <div class="quiz-length-options">
+          <button class="quiz-length-btn active" data-length="5">
+            5 items
+          </button>
+          <button class="quiz-length-btn" data-length="10">10 items</button>
+          <button class="quiz-length-btn" data-length="custom">Custom</button>
+        </div>
+        <div
+          class="quiz-custom-wrap"
+          id="quiz-custom-wrap"
+          style="display: none"
+        >
+          <label for="quiz-custom-input">Custom number</label>
+          <input
+            id="quiz-custom-input"
+            type="number"
+            min="1"
+            max="20"
+            value="15"
+          />
+        </div>
+        <button class="btn btn-checkout" id="btn-start-quiz">START QUIZ</button>
       </div>
-      <div class="payment-total-row">
-        <span>Payment Total</span>
-        <span id="payment-total-amount">₱0</span>
+
+      <div class="quiz-card" id="quiz-card" style="display: none">
+        <h2 class="quiz-question" id="quiz-question-text">
+          Loading question...
+        </h2>
+        <div class="quiz-visual" id="quiz-visual"></div>
+        <div class="quiz-options" id="quiz-options"><!-- filled by JS --></div>
+
+        <!-- Drag-the-exact-amount question type -->
+        <div class="drag-quiz" id="drag-quiz" style="display: none">
+          <p class="drag-target-label">
+            Drag money to make exactly
+            <strong id="drag-target-amount">₱0</strong>
+          </p>
+          <div class="drag-pool" id="drag-pool"><!-- filled by JS --></div>
+          <div class="drag-dropzone" id="drag-dropzone">
+            <span class="drag-dropzone-hint" id="drag-dropzone-hint"
+              >Drop or tap money here</span
+            >
+          </div>
+          <p class="drag-current-total">
+            Your total: <strong id="drag-current-total">₱0</strong>
+          </p>
+          <button class="btn btn-checkout" id="btn-check-drag">CHECK ✔</button>
+        </div>
+
+        <p class="quiz-feedback" id="quiz-feedback"></p>
       </div>
-      <button class="btn btn-checkout" id="btn-give-money">GIVE MONEY TO CASHIER 👩</button>
-      <p class="cart-message" id="payment-message"></p>
-      <button class="btn btn-secondary" id="btn-back-to-store">⬅ Back to Store</button>
-    </aside>
-  </div>
+    </section>
 
-  <!-- Animation stage: student -> cashier -->
-  <div class="stage" id="pay-stage">
-    <div class="actor" id="actor-student">🧒</div>
-    <div class="flying-money" id="flying-money-pay"></div>
-    <div class="stage-caption" id="stage-caption-pay"></div>
-    <div class="actor" id="actor-cashier">👩‍🦱</div>
-  </div>
-</section>
-
-<!-- ======================================================= -->
-<!-- SCREEN 4: TRANSACTION RESULT (change simulation)         -->
-<!-- ======================================================= -->
-<section id="screen-result" class="screen">
-  <header class="topbar">
-    <div class="topbar-title">🧾 Receipt Time</div>
-  </header>
-
-  <div class="result-card">
-    <div id="result-headline" class="result-headline"></div>
-
-    <div class="result-numbers">
-      <div class="result-row"><span>Your items cost</span><strong id="result-total">₱0</strong></div>
-      <div class="result-row"><span>You paid</span><strong id="result-paid">₱0</strong></div>
-      <div class="result-row result-change"><span>Your change</span><strong id="result-change">₱0</strong></div>
-    </div>
-
-    <!-- Cashier hands back change -->
-    <div class="stage" id="change-stage">
-      <div class="actor">👩‍🦱</div>
-      <div class="stage-caption" id="stage-caption-change"></div>
-      <div class="flying-money" id="flying-money-change"></div>
-      <div class="actor">🧒</div>
-    </div>
-
-    <div class="change-breakdown" id="change-breakdown"></div>
-    <div class="change-sum" id="change-sum"></div>
-
-    <div class="stars-earned" id="stars-earned"></div>
-
-    <div class="result-buttons">
-      <button class="btn btn-big" id="btn-continue-shopping">CONTINUE SHOPPING 🛍️</button>
-      <button class="btn btn-secondary" id="btn-go-quiz">TRY THE MONEY QUIZ 🧠</button>
-    </div>
-  </div>
-</section>
-
-<!-- ======================================================= -->
-<!-- SCREEN 5: MONEY LEARNING QUIZ                             -->
-<!-- ======================================================= -->
-<section id="screen-quiz" class="screen">
-  <header class="topbar">
-    <div class="topbar-title">🧠 Money Quiz</div>
-    <div class="money-pill">
-      <div class="money-pill-item">
-        <span class="pill-label">Question</span>
-        <span class="pill-value" id="quiz-progress">1 / 6</span>
+    <!-- ======================================================= -->
+    <!-- SCREEN 6: FINAL SCORE                                     -->
+    <!-- ======================================================= -->
+    <section id="screen-final" class="screen">
+      <div class="welcome-card">
+        <h1 class="store-title">🎉 Great Job!</h1>
+        <div class="final-stars" id="final-stars">⭐ Stars: 0</div>
+        <p class="final-caption">You practiced:</p>
+        <ul class="final-list">
+          <li>✓ Philippine money</li>
+          <li>✓ Counting money</li>
+          <li>✓ Paying at the store</li>
+          <li>✓ Getting change</li>
+          <li>✓ Money combinations</li>
+        </ul>
+        <button class="btn btn-big btn-bounce" id="btn-play-again">
+          PLAY AGAIN 🔄
+        </button>
       </div>
-    </div>
-  </header>
+    </section>
 
-  <div class="quiz-card">
-    <h2 class="quiz-question" id="quiz-question-text">Loading question...</h2>
-    <div class="quiz-visual" id="quiz-visual"></div>
-    <div class="quiz-options" id="quiz-options"><!-- filled by JS --></div>
-
-    <!-- Drag-the-exact-amount question type -->
-    <div class="drag-quiz" id="drag-quiz" style="display:none;">
-      <p class="drag-target-label">Drag money to make exactly <strong id="drag-target-amount">₱0</strong></p>
-      <div class="drag-pool" id="drag-pool"><!-- filled by JS --></div>
-      <div class="drag-dropzone" id="drag-dropzone">
-        <span class="drag-dropzone-hint" id="drag-dropzone-hint">Drop or tap money here</span>
-      </div>
-      <p class="drag-current-total">Your total: <strong id="drag-current-total">₱0</strong></p>
-      <button class="btn btn-checkout" id="btn-check-drag">CHECK ✔</button>
-    </div>
-
-    <p class="quiz-feedback" id="quiz-feedback"></p>
-  </div>
-</section>
-
-<!-- ======================================================= -->
-<!-- SCREEN 6: FINAL SCORE                                     -->
-<!-- ======================================================= -->
-<section id="screen-final" class="screen">
-  <div class="welcome-card">
-    <h1 class="store-title">🎉 Great Job!</h1>
-    <div class="final-stars" id="final-stars">⭐ Stars: 0</div>
-    <p class="final-caption">You practiced:</p>
-    <ul class="final-list">
-      <li>✓ Philippine money</li>
-      <li>✓ Counting money</li>
-      <li>✓ Paying at the store</li>
-      <li>✓ Getting change</li>
-      <li>✓ Money combinations</li>
-    </ul>
-    <button class="btn btn-big btn-bounce" id="btn-play-again">PLAY AGAIN 🔄</button>
-  </div>
-</section>
-
-<script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
