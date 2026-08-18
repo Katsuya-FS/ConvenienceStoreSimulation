@@ -10,17 +10,29 @@
 // The store's products. Feel free to add more — the grid
 // will simply show whatever is in this list.
 const PRODUCTS = [
+  { id: "pencil", name: "Pencil", emoji: "✏️", price: 8 },
+  { id: "ballpen", name: "Ballpen", emoji: "🖊️", price: 12 },
+  { id: "tissue", name: "Tissue", emoji: "🧻", price: 25 },
+  { id: "paper", name: "Paper", emoji: "📃", price: 15 },
+  { id: "notebook", name: "Notebook", emoji: "📓", price: 50 },
+  { id: "ball", name: "Ball", emoji: "🏀", price: 150 },
+  { id: "yoyo", name: "Yo-yo", emoji: "🪀", price: 45 },
+  { id: "toygun", name: "Toy Gun", emoji: "🔫", price: 200 },
+  { id: "robottoy", name: "Robot Toy", emoji: "🤖", price: 250 },
+  { id: "teddybear", name: "Teddy Bear", emoji: "🧸", price: 175 },
+  { id: "scissor", name: "Scissor", emoji: "✂️", price: 35 },
+  { id: "magnifyingGlass", name: "Magnifying Glass", emoji: "🔍", price: 55 },
   { id: "bread", name: "Bread", emoji: "🍞", price: 45 },
   { id: "milk", name: "Milk", emoji: "🥛", price: 60 },
   { id: "choco", name: "Chocolate", emoji: "🍫", price: 35 },
   { id: "juice", name: "Juice", emoji: "🧃", price: 25 },
   { id: "cookies", name: "Cookies", emoji: "🍪", price: 30 },
-  { id: "noodles", name: "Instant Noodles", emoji: "🍜", price: 18 },
+  { id: "noodles", name: "Instant Noodles", emoji: "🍜", price: 160 },
   { id: "candy", name: "Candy", emoji: "🍬", price: 10 },
   { id: "softdrink", name: "Soft Drink", emoji: "🥤", price: 35 },
   { id: "water", name: "Water", emoji: "💧", price: 20 },
   { id: "chips", name: "Chips", emoji: "🍟", price: 55 },
-  { id: "soap", name: "Soap", emoji: "🧼", price: 40 },
+  { id: "soap", name: "Soap", emoji: "🧼", price: 25 },
   { id: "sandwich", name: "Sandwich", emoji: "🥪", price: 75 },
 ];
 
